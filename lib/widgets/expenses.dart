@@ -43,8 +43,40 @@ class _Expenses extends State<Expenses> {
     });
   }
 
+  void _removeExpense(Expense expense) {
+    var itemIndex = _registeredExpenses.indexOf(expense);
+    setState(() {
+      _registeredExpenses.remove(expense);
+    });
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('A budget has been removed'),
+        duration: Duration(seconds: 2),
+        action: SnackBarAction(
+          label: "UNDO",
+          onPressed: () {
+            setState(() {
+              _registeredExpenses.insert(itemIndex, expense);
+            });
+          },
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    Widget mainContent = Center(
+      child: Text("No expense found, please add one.."),
+    );
+
+    if (_registeredExpenses.isNotEmpty) {
+      mainContent = ExpensesList(
+        expenses: _registeredExpenses,
+        removeItem: _removeExpense,
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text("Expense Tracker"),
@@ -52,12 +84,7 @@ class _Expenses extends State<Expenses> {
           IconButton(onPressed: _openAddExpenseOverlay, icon: Icon(Icons.add)),
         ],
       ),
-      body: Column(
-        children: [
-          Text("chart"),
-          Expanded(child: ExpensesList(expenses: _registeredExpenses)),
-        ],
-      ),
+      body: Column(children: [Text("chart"), Expanded(child: mainContent)]),
     );
   }
 }
